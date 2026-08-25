@@ -23,5 +23,11 @@ start "marquee-server" /min cmd /c "npm run dev -- --port 4830 --strictPort"
 powershell -NoProfile -Command "for($i=0;$i -lt 60;$i++){try{Invoke-WebRequest http://localhost:4830 -UseBasicParsing -TimeoutSec 2|Out-Null;exit 0}catch{Start-Sleep -Milliseconds 500}};exit 1" >nul 2>&1
 
 :open
-start "" "http://localhost:4830"
+if exist "%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe" (
+    start "" "%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe" --app="http://localhost:4830"
+) else if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" (
+    start "" "%ProgramFiles%\Google\Chrome\Application\chrome.exe" --app="http://localhost:4830"
+) else (
+    start "" "http://localhost:4830"
+)
 exit

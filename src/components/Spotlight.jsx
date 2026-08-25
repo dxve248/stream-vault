@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useApp } from '../context/AppContext.jsx'
-import { formatRuntime, matchScore, thumbFor } from '../data/catalog.js'
+import { formatRuntime, matchScore, thumbFor, kidFilter } from '../data/catalog.js'
 import Icon from './Icon.jsx'
 
-const FEATURED = ['kung-fury', 'oats-studios-volume-1', 'sprite-fright', 'tears-of-steel', 'cosmos-laundromat']
+const FEATURED = ['kung-fury', 'the-amazing-digital-circus', 'oats-studios-volume-1', 'hazbin-hotel-pilot', 'sprite-fright']
 
 export default function Spotlight({ getItem }) {
   const [index, setIndex] = useState(0)
-  const { openDetails } = useApp()
-  const items = FEATURED.map(getItem).filter(Boolean)
+  const { openDetails, kidsMode } = useApp()
+  const items = kidFilter(
+    FEATURED.map(getItem).filter(Boolean),
+    kidsMode
+  )
 
   useEffect(() => {
     const id = setInterval(() => setIndex((i) => (i + 1) % items.length), 9000)
@@ -18,13 +21,17 @@ export default function Spotlight({ getItem }) {
 
   if (!items.length) return null
   const item = items[index]
-  const thumb = thumbFor(item)
 
   return (
     <section className="spotlight">
-      <div className="spot-bg" key={item.slug}>
-        <img src={thumb.primary} alt="" onError={(e) => { e.currentTarget.src = thumb.secondary }} />
-      </div>
+      {items.map((it, i) => {
+        const t = thumbFor(it)
+        return (
+          <div key={it.slug} className={`spot-bg ${i === index ? 'active' : ''}`}>
+            <img src={t.primary} alt="" onError={(e) => { e.currentTarget.src = t.secondary }} />
+          </div>
+        )
+      })}
       <div className="spot-shade" />
       <div className="spot-content" key={item.slug + '-c'}>
         <span className="spot-kicker">

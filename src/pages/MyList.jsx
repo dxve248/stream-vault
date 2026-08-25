@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom'
-import { getItem } from '../data/catalog.js'
+import { getItem, kidFilter } from '../data/catalog.js'
 import { useApp } from '../context/AppContext.jsx'
 import Wall from '../components/Wall.jsx'
 
 export default function MyList() {
-  const { myList } = useApp()
-  const items = myList.map(getItem).filter(Boolean)
+  const { myList, kidsMode } = useApp()
+  const items = kidFilter(myList.map(getItem).filter(Boolean), kidsMode)
 
   if (!items.length) {
     return (

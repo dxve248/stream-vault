@@ -1,20 +1,28 @@
 import { useMemo, useState } from 'react'
-import { CATALOG } from '../data/catalog.js'
+import { CATALOG, kidFilter } from '../data/catalog.js'
+import { useApp } from '../context/AppContext.jsx'
 import Wall, { PillBar } from '../components/Wall.jsx'
 
 export default function Browse({ heading = 'Browse the Vault', sub = 'Every title in the collection, one marquee.', filterType }) {
   const [genre, setGenre] = useState(null)
+  const { kidsMode } = useApp()
 
   const genres = useMemo(() => {
-    const pool = filterType ? CATALOG.filter((i) => i.type === filterType) : CATALOG
+    const pool = kidFilter(
+      filterType ? CATALOG.filter((i) => i.type === filterType) : CATALOG,
+      kidsMode
+    )
     return [...new Set(pool.flatMap((i) => i.genres))].sort()
-  }, [filterType])
+  }, [filterType, kidsMode])
 
   const results = useMemo(() => {
-    let pool = filterType ? CATALOG.filter((i) => i.type === filterType) : CATALOG
+    let pool = kidFilter(
+      filterType ? CATALOG.filter((i) => i.type === filterType) : CATALOG,
+      kidsMode
+    )
     if (genre) pool = pool.filter((i) => i.genres.includes(genre))
     return pool
-  }, [filterType, genre])
+  }, [filterType, genre, kidsMode])
 
   return (
     <section className="grid-page">

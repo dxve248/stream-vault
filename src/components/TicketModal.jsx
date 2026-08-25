@@ -5,9 +5,11 @@ import Icon from './Icon.jsx'
 import Thumb from './Thumb.jsx'
 
 export default function TicketModal() {
-  const { modalItem: item, closeDetails, openDetails, inList, toggleList } = useApp()
+  const { modalItem: item, modalClosing, closeDetails, openDetails, inList, toggleList, ratings, rateTitle } = useApp()
   const navigate = useNavigate()
   const listed = inList(item.slug)
+  const rating = ratings[item.slug]
+  const closingClass = modalClosing ? 'is-closing' : ''
 
   const play = (epNum) =>
     navigate(`/watch/${item.slug}${item.episodes && epNum ? `?ep=${epNum}` : ''}`)
@@ -17,8 +19,8 @@ export default function TicketModal() {
   ).slice(0, 8)
 
   return (
-    <div className="modal-backdrop" onClick={closeDetails}>
-      <div className="ticket" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={item.title}>
+    <div className={`modal-backdrop ${closingClass}`} onClick={closeDetails}>
+      <div className={`ticket ${closingClass}`} onClick={(e) => e.stopPropagation()} role="dialog" aria-label={item.title}>
         <div className="ticket-hero">
           <Thumb item={item} className="" />
           <div className="ticket-hero-fade" />
@@ -35,6 +37,20 @@ export default function TicketModal() {
               onClick={() => toggleList(item.slug)}
             >
               <Icon name={listed ? 'check' : 'plus'} size={19} />
+            </button>
+            <button
+              className={`round-btn ${rating === 'up' ? 'rated-up' : ''}`}
+              title={rating === 'up' ? 'Remove like' : 'I like this'}
+              onClick={() => rateTitle(item.slug, 'up')}
+            >
+              <Icon name="thumbUp" size={17} />
+            </button>
+            <button
+              className={`round-btn ${rating === 'down' ? 'rated-down' : ''}`}
+              title={rating === 'down' ? 'Remove dislike' : 'Not for me'}
+              onClick={() => rateTitle(item.slug, 'down')}
+            >
+              <Icon name="thumbDown" size={17} />
             </button>
           </div>
         </div>

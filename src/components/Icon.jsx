@@ -48,6 +48,27 @@ const PATHS = {
       <path d="M19 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5" />
     </>
   ),
+  dice: (
+    <>
+      <rect x="3.5" y="3.5" width="17" height="17" rx="4" />
+      <circle cx="8.5" cy="8.5" r="1.4" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" />
+      <circle cx="15.5" cy="15.5" r="1.4" fill="currentColor" stroke="none" />
+    </>
+  ),
+  shield: <path d="M12 3l7 3v5c0 4.5-2.8 7.9-7 10-4.2-2.1-7-5.5-7-10V6z" />,
+  thumbUp: (
+    <>
+      <path d="M7 10v12" />
+      <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a1 1 0 0 1-1-1V11a1 1 0 0 1 1-1h3z" />
+    </>
+  ),
+  thumbDown: (
+    <>
+      <path d="M17 14V2" />
+      <path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-3z" />
+    </>
+  ),
 }
 
 export default function Icon({ name, size = 20 }) {

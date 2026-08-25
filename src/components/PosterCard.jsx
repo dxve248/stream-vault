@@ -4,7 +4,7 @@ import { formatRuntime, matchScore } from '../data/catalog.js'
 import Icon from './Icon.jsx'
 import Thumb from './Thumb.jsx'
 
-export default function PosterCard({ item }) {
+export default function PosterCard({ item, index = 0 }) {
   const { openDetails, inList, toggleList } = useApp()
   const navigate = useNavigate()
   const listed = inList(item.slug)
@@ -15,6 +15,7 @@ export default function PosterCard({ item }) {
       role="button"
       tabIndex={0}
       aria-label={item.title}
+      style={{ '--i': Math.min(index, 8) }}
       onClick={() => openDetails(item)}
       onKeyDown={(e) => e.key === 'Enter' && openDetails(item)}
     >

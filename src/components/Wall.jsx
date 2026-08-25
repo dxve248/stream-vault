@@ -4,8 +4,8 @@ export default function Wall({ items }) {
   if (!items.length) return null
   return (
     <div className="wall">
-      {items.map((item) => (
-        <PosterCard key={item.slug} item={item} />
+      {items.map((item, i) => (
+        <PosterCard key={item.slug} item={item} index={i} />
       ))}
     </div>
   )

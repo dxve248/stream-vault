@@ -1,22 +1,24 @@
 import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { CATALOG } from '../data/catalog.js'
+import { CATALOG, kidFilter } from '../data/catalog.js'
+import { useApp } from '../context/AppContext.jsx'
 import Wall from '../components/Wall.jsx'
 
 export default function SearchPage() {
   const [params] = useSearchParams()
   const q = (params.get('q') || '').trim()
+  const { kidsMode } = useApp()
 
   const results = useMemo(() => {
     if (!q) return []
     const needle = q.toLowerCase()
-    return CATALOG.filter((item) =>
+    return kidFilter(CATALOG, kidsMode).filter((item) =>
       [item.title, item.director, item.year.toString(), ...item.genres, ...item.cast]
         .join(' ')
         .toLowerCase()
         .includes(needle)
     )
-  }, [q])
+  }, [q, kidsMode])
 
   return (
     <section className="grid-page">

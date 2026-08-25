@@ -21,6 +21,7 @@
 
 html {
   background: var(--bg);
+  scroll-behavior: smooth;
 }
 
 body {
@@ -62,6 +63,26 @@ img { display: block; }
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+.page-anim {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-anim.rise { animation: pageRise 0.5s cubic-bezier(0.22, 0.61, 0.36, 1); }
+
+.page-anim.soft { animation: softFade 0.4s ease; }
+
+@keyframes pageRise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes softFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* ============ SIDEBAR RAIL ============ */
@@ -161,6 +182,12 @@ img { display: block; }
   transform: translateY(-50%) translateX(0);
 }
 
+.rail-item.kids-on {
+  background: linear-gradient(135deg, rgba(255, 209, 102, 0.25), rgba(255, 149, 0, 0.15));
+  border: 1px solid rgba(255, 209, 102, 0.5);
+  color: var(--gold);
+}
+
 .rail-bottom {
   margin-top: auto;
   display: flex;
@@ -242,7 +269,13 @@ img { display: block; }
 .spot-bg {
   position: absolute;
   inset: 0;
-  z-index: -2;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+.spot-bg.active {
+  opacity: 1;
 }
 
 .spot-bg img {
@@ -250,7 +283,7 @@ img { display: block; }
   height: 100%;
   object-fit: cover;
   object-position: top;
-  animation: spotZoom 16s ease forwards;
+  animation: spotZoom 18s ease forwards;
 }
 
 @keyframes spotZoom {
@@ -261,7 +294,7 @@ img { display: block; }
 .spot-shade {
   position: absolute;
   inset: 0;
-  z-index: -1;
+  z-index: 1;
   background:
     radial-gradient(1000px 480px at 18% 78%, rgba(10, 10, 18, 0.55), transparent),
     linear-gradient(80deg, rgba(10, 10, 18, 0.94) 8%, rgba(10, 10, 18, 0.42) 52%, rgba(10, 10, 18, 0.25)),
@@ -269,9 +302,11 @@ img { display: block; }
 }
 
 .spot-content {
+  position: relative;
+  z-index: 2;
   padding: 0 clamp(24px, 6vw, 90px) 13vh;
   max-width: 780px;
-  animation: spotIn 0.8s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+  animation: spotIn 0.9s cubic-bezier(0.2, 0.9, 0.3, 1) both;
 }
 
 @keyframes spotIn {
@@ -458,7 +493,13 @@ img { display: block; }
   background: var(--panel);
   border: 1px solid var(--line);
   cursor: pointer;
+  animation: cardIn 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 45ms);
   transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4), box-shadow 0.3s ease, border-color 0.3s;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
 }
 
 .pcard:hover {
@@ -650,6 +691,7 @@ img { display: block; }
   border: 1px solid var(--line);
   background: var(--panel);
   cursor: pointer;
+  animation: cardIn 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
   transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
 }
 
@@ -695,10 +737,12 @@ img { display: block; }
   justify-content: center;
   padding: 4vh 4%;
   overflow-y: auto;
-  animation: fadeIn 0.25s ease;
+  animation: fadeInSoft 0.25s ease;
 }
 
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal-backdrop.is-closing { animation: backdropOut 0.26s ease forwards; }
+
+@keyframes backdropOut { to { opacity: 0; } }
 
 .ticket {
   position: relative;
@@ -715,6 +759,12 @@ img { display: block; }
 @keyframes ticketPop {
   from { opacity: 0; transform: translateY(50px) scale(0.93) rotateX(6deg); }
   to { opacity: 1; transform: none; }
+}
+
+.ticket.is-closing { animation: ticketOut 0.28s cubic-bezier(0.5, 0, 0.75, 0.4) forwards; }
+
+@keyframes ticketOut {
+  to { opacity: 0; transform: translateY(46px) scale(0.93); }
 }
 
 .ticket-hero { position: relative; aspect-ratio: 16 / 7.6; background: #000; }
@@ -767,6 +817,17 @@ img { display: block; }
 }
 
 .round-btn:hover { border-color: #fff; background: rgba(255, 45, 85, 0.7); }
+
+.round-btn.rated-up {
+  background: var(--grad);
+  border-color: transparent;
+}
+
+.round-btn.rated-down {
+  background: #3a3a55;
+  border-color: var(--gold);
+  color: var(--gold);
+}
 
 .ticket-body { padding: 4px clamp(18px, 4%, 38px) 34px; display: grid; grid-template-columns: 1.15fr 1fr; gap: 26px; }
 
@@ -886,6 +947,7 @@ img { display: block; }
   inset: 0;
   z-index: 320;
   background: #000;
+  animation: softFade 0.45s ease;
 }
 
 .watch-stage { position: absolute; inset: 0; }
