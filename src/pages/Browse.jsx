@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { CATALOG } from '../data/catalog.js'
-import MovieCard from '../components/MovieCard.jsx'
+import Wall, { PillBar } from '../components/Wall.jsx'
 
-export default function Browse({ heading = 'Browse All', sub = 'The entire vault, ready when you are.', filterType }) {
+export default function Browse({ heading = 'Browse the Vault', sub = 'Every title in the collection, one marquee.', filterType }) {
   const [genre, setGenre] = useState(null)
 
   const genres = useMemo(() => {
@@ -20,26 +20,13 @@ export default function Browse({ heading = 'Browse All', sub = 'The entire vault
     <section className="grid-page">
       <h1 className="page-heading">{heading}</h1>
       <p className="page-sub">{sub}</p>
-      <div className="chips">
-        <button className={`chip ${!genre ? 'active' : ''}`} onClick={() => setGenre(null)}>
-          All
-        </button>
-        {genres.map((g) => (
-          <button key={g} className={`chip ${genre === g ? 'active' : ''}`} onClick={() => setGenre(g)}>
-            {g}
-          </button>
-        ))}
-      </div>
+      <PillBar genres={genres} active={genre} onSelect={setGenre} />
       {results.length ? (
-        <div className="grid">
-          {results.map((item) => (
-            <MovieCard key={item.slug} item={item} />
-          ))}
-        </div>
+        <Wall items={results} />
       ) : (
-        <div className="empty-state">
-          <h2>Nothing in this aisle yet</h2>
-          <p>Try a different genre.</p>
+        <div className="empty-state" style={{ padding: '40px 20px 90px' }}>
+          <h2>Nothing in this aisle</h2>
+          <p>Try another genre.</p>
         </div>
       )}
     </section>

@@ -1,14 +1,12 @@
 export default function Footer() {
   return (
     <footer className="footer">
+      <p><strong>MIDNIGHT MARQUEE</strong></p>
+      <p>Dave&rsquo;s private cinema &mdash; now showing forever.</p>
       <p>
-        <strong>STREAMVAULT</strong> — timeless cinema, free forever.
+        Full films stream via official YouTube embeds and the{' '}
+        <a href="https://archive.org" target="_blank" rel="noreferrer">Internet Archive</a>. Press Esc to leave anything.
       </p>
-      <p>
-        Every film and serial streams legally from the public domain via{' '}
-        <a href="https://archive.org" target="_blank" rel="noreferrer">archive.org</a>. Built with React + Vite.
-      </p>
-      <p style={{ color: '#555' }}>Questions? Press Esc to close anything, or just keep watching.</p>
     </footer>
   )
 }

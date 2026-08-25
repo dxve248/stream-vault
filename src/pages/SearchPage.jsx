@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { CATALOG } from '../data/catalog.js'
-import MovieCard from '../components/MovieCard.jsx'
+import Wall from '../components/Wall.jsx'
 
 export default function SearchPage() {
   const [params] = useSearchParams()
@@ -10,42 +10,33 @@ export default function SearchPage() {
   const results = useMemo(() => {
     if (!q) return []
     const needle = q.toLowerCase()
-    return CATALOG.filter((item) => {
-      const haystack = [
-        item.title,
-        item.director,
-        item.year.toString(),
-        ...item.genres,
-        ...item.cast,
-      ]
+    return CATALOG.filter((item) =>
+      [item.title, item.director, item.year.toString(), ...item.genres, ...item.cast]
         .join(' ')
         .toLowerCase()
-      return haystack.includes(needle)
-    })
+        .includes(needle)
+    )
   }, [q])
 
   return (
     <section className="grid-page">
       <h1 className="page-heading">Search</h1>
-      <p className="page-sub">
-        {q
-          ? results.length
-            ? `Results for "${q}" \u2014 ${results.length} title${results.length === 1 ? '' : 's'}`
-            : null
-          : 'Type in the search box above to explore the vault.'}
-      </p>
-      {results.length > 0 && (
-        <div className="grid">
-          {results.map((item) => (
-            <MovieCard key={item.slug} item={item} />
-          ))}
-        </div>
-      )}
-      {q && !results.length && (
-        <div className="empty-state">
-          <h2>No matches for &ldquo;{q}&rdquo;</h2>
-          <p>Try a different title, actor, director or genre.</p>
-        </div>
+      {q ? (
+        results.length ? (
+          <>
+            <p className="page-sub">
+              {results.length} title{results.length === 1 ? '' : 's'} matching &ldquo;{q}&rdquo;
+            </p>
+            <Wall items={results} />
+          </>
+        ) : (
+          <div className="empty-state" style={{ padding: '30px 20px 90px' }}>
+            <h2>Nothing matches &ldquo;{q}&rdquo;</h2>
+            <p>Try a title, actor, director or genre.</p>
+          </div>
+        )
+      ) : (
+        <p className="page-sub">Use the search bubble up top to explore the collection.</p>
       )}
     </section>
   )

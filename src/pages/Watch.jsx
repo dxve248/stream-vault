@@ -1,13 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useApp } from '../context/AppContext.jsx'
-import {
-  getEpisode,
-  getItem,
-  makeWatchKey,
-  resolveStream,
-  streamUrl,
-} from '../data/catalog.js'
+import { getEpisode, getItem, makeWatchKey, loadYouTubeApi } from '../data/catalog.js'
+import Icon from '../components/Icon.jsx'
 
 export default function Watch() {
   const { slug } = useParams()
@@ -18,45 +13,101 @@ export default function Watch() {
   const item = getItem(slug)
   const epNum = item?.episodes ? Number(params.get('ep')) || item.episodes[0].n : 0
   const ep = item?.episodes ? getEpisode(item, epNum) : null
+  const currentYtId = item ? (item.episodes ? ep.ytId : item.ytId) : null
 
-  const archiveId = item ? (ep ? ep.archiveId : item.archiveId) : null
-  const guessSrc = item ? streamUrl(archiveId, ep ? ep.file : item.file) : null
-
-  const [resolvedSrc, setResolvedSrc] = useState(null)
-  const [useEmbed, setUseEmbed] = useState(false)
   const [barHidden, setBarHidden] = useState(false)
   const [ended, setEnded] = useState(false)
+  const [ready, setReady] = useState(false)
 
-  const videoRef = useRef(null)
-  const srcRef = useRef(guessSrc)
-  const triedResolveRef = useRef(false)
-  const lastSaveRef = useRef(0)
+  const stageRef = useRef(null)
+  const playerRef = useRef(null)
+  const watchKeyRef = useRef(makeWatchKey(slug, epNum))
+  const savedRef = useRef(null)
+  const endedRef = useRef(false)
+  const cbsRef = useRef({})
 
-  srcRef.current = resolvedSrc || guessSrc
-
-  const watchKey = makeWatchKey(slug, epNum)
-  const watchKeyRef = useRef(watchKey)
-  watchKeyRef.current = watchKey
-  const saved = item ? progress[watchKey] : null
+  watchKeyRef.current = makeWatchKey(slug, epNum)
+  savedRef.current = item ? progress[watchKeyRef.current] : null
+  cbsRef.current.save = saveProgress
+  cbsRef.current.clear = clearProgress
 
   useEffect(() => {
-    setResolvedSrc(null)
-    setUseEmbed(false)
     setEnded(false)
-    setBarHidden(false)
-    triedResolveRef.current = false
-    if (!guessSrc && archiveId) {
-      resolveStream(archiveId).then(setResolvedSrc).catch(() => setUseEmbed(true))
+    setReady(false)
+    endedRef.current = false
+  }, [currentYtId])
+
+  useEffect(() => {
+    if (!currentYtId || !stageRef.current) return undefined
+    let cancelled = false
+    let interval = null
+    let player = null
+
+    loadYouTubeApi().then((YT) => {
+      if (cancelled || !stageRef.current) return
+      player = new YT.Player(stageRef.current, {
+        videoId: currentYtId,
+        playerVars: {
+          autoplay: 1,
+          rel: 0,
+          modestbranding: 1,
+          playsinline: 1,
+        },
+        events: {
+          onReady: (e) => {
+            setReady(true)
+            try {
+              const d = e.target.getDuration()
+              const s = savedRef.current
+              if (s && d && s.t > 30 && s.t < d - 45) e.target.seekTo(s.t, true)
+              e.target.playVideo()
+            } catch {}
+          },
+          onStateChange: (e) => {
+            if (e.data === YT.PlayerState.ENDED) {
+              endedRef.current = true
+              cbsRef.current.clear(watchKeyRef.current)
+              setEnded(true)
+            }
+          },
+        },
+      })
+      playerRef.current = player
+      interval = setInterval(() => {
+        try {
+          const t = player.getCurrentTime()
+          const d = player.getDuration()
+          if (!endedRef.current && t > 5 && d) {
+            cbsRef.current.save(watchKeyRef.current, Math.floor(t), Math.floor(d))
+          }
+        } catch {}
+      }, 5000)
+    })
+
+    return () => {
+      cancelled = true
+      clearInterval(interval)
+      try {
+        const p = playerRef.current
+        if (p && p.getCurrentTime) {
+          const t = p.getCurrentTime()
+          const d = p.getDuration()
+          if (!endedRef.current && t > 5 && d) {
+            cbsRef.current.save(watchKeyRef.current, Math.floor(t), Math.floor(d))
+          }
+        }
+        p?.destroy?.()
+      } catch {}
+      playerRef.current = null
     }
-    window.scrollTo(0, 0)
-  }, [archiveId])
+  }, [currentYtId])
 
   useEffect(() => {
     let timer
     const wake = () => {
       setBarHidden(false)
       clearTimeout(timer)
-      timer = setTimeout(() => setBarHidden(true), 3400)
+      timer = setTimeout(() => setBarHidden(true), 3600)
     }
     wake()
     window.addEventListener('mousemove', wake)
@@ -66,147 +117,70 @@ export default function Watch() {
     }
   }, [])
 
-  const flushSave = () => {
-    const v = videoRef.current
-    if (!v || !v.duration || Number.isNaN(v.duration)) return
-    if (v.currentTime > 5)
-      saveProgress(watchKeyRef.current, Math.floor(v.currentTime), Math.floor(v.duration))
-  }
-
-  useEffect(() => {
-    return () => flushSave()
-  }, [])
-
-  useEffect(() => {
-    const onLeave = () => flushSave()
-    window.addEventListener('beforeunload', onLeave)
-    return () => window.removeEventListener('beforeunload', onLeave)
-  })
-
   if (!item || (item.episodes && !ep)) {
     return (
       <div className="not-found">
         <div>
-          <h1 style={{ fontSize: 42 }}>Title not found</h1>
-          <p style={{ color: '#b3b3b3', margin: '12px 0 24px' }}>
-            That one seems to have slipped out of the vault.
+          <h1 style={{ fontFamily: 'Bebas Neue', fontSize: 52, letterSpacing: 2 }}>
+            Title not found
+          </h1>
+          <p style={{ color: '#9a9ab2', margin: '10px 0 26px' }}>
+            That reel seems to have gone missing from the vault.
           </p>
-          <Link to="/" className="btn btn-red">Back to Home</Link>
+          <Link to="/" className="btn btn-primary">Back to the Lobby</Link>
         </div>
       </div>
     )
   }
 
-  const nextEp =
-    item.episodes ? item.episodes.find((e) => e.n === epNum + 1) || null : null
-
-  const handleVideoError = () => {
-    if (!triedResolveRef.current) {
-      triedResolveRef.current = true
-      resolveStream(archiveId)
-        .then((url) => {
-          if (url === srcRef.current) setUseEmbed(true)
-          else setResolvedSrc(url)
-        })
-        .catch(() => setUseEmbed(true))
-    } else {
-      setUseEmbed(true)
-    }
-  }
-
-  const activeSrc = resolvedSrc || guessSrc
+  const nextEp = item.episodes ? item.episodes.find((e) => e.n === epNum + 1) || null : null
 
   return (
     <div className="watch-page">
-      <div className="watch-video-wrap" onMouseLeave={() => setBarHidden(false)}>
-        {!useEmbed && (
-          <video
-            ref={videoRef}
-            key={activeSrc}
-            src={activeSrc}
-            controls
-            autoPlay
-            playsInline
-            onError={handleVideoError}
-            onLoadedMetadata={(e) => {
-              const v = e.currentTarget
-              if (saved && saved.t > 30 && saved.t < v.duration - 45) v.currentTime = saved.t
-            }}
-            onTimeUpdate={(e) => {
-              const now = Date.now()
-              if (now - lastSaveRef.current > 5000) {
-                lastSaveRef.current = now
-                const v = e.currentTarget
-                if (v.duration) saveProgress(watchKey, Math.floor(v.currentTime), Math.floor(v.duration))
-              }
-            }}
-            onEnded={() => {
-              clearProgress(watchKey)
-              setEnded(true)
-            }}
-          />
-        )}
-        {useEmbed && (
-          <iframe
-            key={archiveId}
-            title={item.title}
-            src={`https://archive.org/embed/${archiveId}`}
-            allowFullScreen
-            allow="autoplay; fullscreen"
-          />
-        )}
+      <div className="watch-stage">
+        <div ref={stageRef} />
+      </div>
 
-        <div className={`watch-bar ${barHidden ? 'hidden' : ''}`}>
-          <button className="watch-back" onClick={() => navigate(-1)}>
-            &#8592; Back
-          </button>
-          <div className="watch-titles">
-            <h1>{item.title}</h1>
-            <p>
-              {ep ? `${ep.title}` : `${item.year} \u00b7 ${item.genres.join(', ')}`}
-              {saved && saved.t > 30 ? ' \u00b7 Resuming' : ''}
-            </p>
+      <div className={`watch-bar ${barHidden && ready ? 'hidden' : ''}`}>
+        <button className="watch-back" onClick={() => navigate(-1)}>
+          <Icon name="arrowLeft" size={17} /> Lobby
+        </button>
+        <div className="watch-titles">
+          <h1>{item.title}</h1>
+          <p>
+            {ep ? ep.title : `${item.year} \u00b7 ${item.genres.join(', ')}`}
+            {saved && saved.t > 30 ? ' \u00b7 resuming' : ''}
+          </p>
+        </div>
+        <div className="watch-links">
+          <a
+            className="watch-link"
+            href={`https://www.youtube.com/watch?v=${currentYtId}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <Icon name="external" size={15} /> YouTube
+          </a>
+        </div>
+      </div>
+
+      {ended && nextEp && (
+        <div className="next-episode">
+          <small>Up Next</small>
+          <h4>{nextEp.title}</h4>
+          <div className="row-btns">
+            <button
+              className="btn btn-primary"
+              onClick={() => navigate(`/watch/${slug}?ep=${nextEp.n}`)}
+            >
+              <Icon name="play" size={15} /> Play
+            </button>
+            <button className="btn btn-glass" onClick={() => navigate('/')}>
+              Lobby
+            </button>
           </div>
         </div>
-
-        {ended && nextEp && (
-          <div className="next-episode">
-            <small>Up Next</small>
-            <h4>{nextEp.title}</h4>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button
-                className="btn btn-white"
-                style={{ fontSize: 14, padding: '8px 16px' }}
-                onClick={() => navigate(`/watch/${slug}?ep=${nextEp.n}`)}
-              >
-                &#9654; Play
-              </button>
-              <button
-                className="btn btn-grey"
-                style={{ fontSize: 14, padding: '8px 16px' }}
-                onClick={() => navigate('/')}
-              >
-                Home
-              </button>
-            </div>
-          </div>
-        )}
-
-        {useEmbed && (
-          <p
-            style={{
-              position: 'absolute',
-              bottom: 10,
-              right: 14,
-              zIndex: 6,
-              color: '#888',
-              fontSize: 12,
-            }}
-          >
-            Playing via the Archive.org player
-          </p>
-        )}
-      </div>
+      )}
     </div>
   )
 }

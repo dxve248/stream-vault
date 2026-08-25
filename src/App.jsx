@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { useApp } from './context/AppContext.jsx'
-import Navbar from './components/Navbar.jsx'
-import DetailModal from './components/DetailModal.jsx'
+import Sidebar from './components/Sidebar.jsx'
+import SearchBar from './components/SearchBar.jsx'
+import TicketModal from './components/TicketModal.jsx'
 import Footer from './components/Footer.jsx'
 import Home from './pages/Home.jsx'
 import Browse from './pages/Browse.jsx'
@@ -36,21 +37,22 @@ export default function App() {
   return (
     <div className="app-shell">
       <ScrollToTop />
-      <Navbar />
-      <main className="page-body">
+      <Sidebar />
+      <div className="main-area">
+        <SearchBar />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/movies" element={<Browse key="movies" filterType="movie" heading="Movies" />} />
-          <Route path="/series" element={<Browse key="series" filterType="series" heading="Series & Serials" />} />
-          <Route path="/browse" element={<Browse key="all" heading="Browse All" />} />
+          <Route path="/movies" element={<Browse key="movies" filterType="movie" heading="The Movies" sub="Feature presentations from every era." />} />
+          <Route path="/series" element={<Browse key="series" filterType="series" heading="Serials & Series" sub="Chapter plays and late-night anthologies." />} />
+          <Route path="/browse" element={<Browse key="all" />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/my-list" element={<MyList />} />
           <Route path="/watch/:slug" element={<Watch />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </main>
-      <Footer />
-      {modalItem && <DetailModal />}
+        <Footer />
+      </div>
+      {modalItem && <TicketModal />}
     </div>
   )
 }
