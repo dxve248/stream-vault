@@ -1,13 +1,3 @@
-export const thumbFor = (item) => ({
-  primary: `https://i.ytimg.com/vi/${item.ytId}/maxresdefault.jpg`,
-  secondary: `https://i.ytimg.com/vi/${item.ytId}/mqdefault.jpg`,
-})
-
-export const thumbForVideo = (ytId) => ({
-  primary: `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg`,
-  secondary: `https://i.ytimg.com/vi/${ytId}/mqdefault.jpg`,
-})
-
 const CATALOG_RAW = [
   {
     slug: 'kung-fury',
@@ -21,6 +11,7 @@ const CATALOG_RAW = [
     cast: ['David Sandberg', 'Jorma Taccone', 'David Hasselhoff'],
     desc: 'A Miami detective travels back in time to kick Adolf Hitler\u2019s butt \u2014 with laser raptors, Viking babes and a machine-gun arm. The internet\u2019s biggest crowd-funded action smash.',
     ytId: 'bS5P_LAqiVg',
+    ageGate: true,
   },
   {
     slug: 'life-in-a-day-2020',
@@ -474,8 +465,9 @@ const CATALOG_RAW = [
     genres: ['Shorts', 'Animation', 'Drama', 'Romance'],
     director: 'Alberto Mielgo',
     cast: ['The Smoker', 'The City'],
-    desc: 'Over one long Manhattan afternoon, a man smokes on a rooftop and asks the big question: is true love real, or just advertising? The Love, Death & Robots director\u2019s painterly Academy Award winner.',
+    desc: 'The Love, Death & Robots director\u2019s painterly Academy Award winner.',
     ytId: 'i8MQl7vCkMQ',
+    ageGate: true,
   },
   {
     slug: 'kick-heart',
@@ -529,7 +521,7 @@ const CATALOG_RAW = [
     desc: 'An assassination business run straight out of Hell \u2014 IMP takes hits on the living for demon clients, led by the chaos goblin Blitz\u00f8 and his deeply dysfunctional found family. Full seasons, free forever, right here.',
     ytId: 'el_PChGfJN8',
     episodes: [
-      { n: 1, title: 'Pilot', ytId: 'OlahNrlcgS4', runtime: 26 },
+      { n: 1, title: 'Pilot', ytId: 'OlahNrlcgS4', runtime: 26, ageGate: true },
       { n: 2, title: 'Murder Family', ytId: 'el_PChGfJN8', runtime: 22 },
       { n: 3, title: 'Loo Loo Land', ytId: 'kpnwRg268FQ', runtime: 22 },
       { n: 4, title: 'C.H.E.R.U.B', ytId: '1ZFseYPmkAk', runtime: 22 },
@@ -952,6 +944,7 @@ const CATALOG_RAW = [
     cast: ['The Bullied Boy', 'The Birch'],
     desc: 'A tormented boy\u2019s only friend lives in the woods behind his house \u2014 an ancient tree-spirit that protects him with unspeakable violence. The short that built Crypt TV\u2019s monster universe.',
     ytId: 'SxQj0DumF8Y',
+    ageGate: true,
   },
   {
     slug: 'mimic-crypt',
@@ -1214,8 +1207,8 @@ const CATALOG_RAW = [
     ytId: 'VjQ2t_yNHQs',
     episodes: [
       { n: 1, title: 'Rakka', ytId: 'VjQ2t_yNHQs', runtime: 22 },
-      { n: 2, title: 'Firebase', ytId: 'Tm0V24IEHao', runtime: 27 },
-      { n: 3, title: 'Zygote', ytId: 'pKWB-MVJ4sQ', runtime: 23 },
+      { n: 2, title: 'Firebase', ytId: 'Tm0V24IEHao', runtime: 27, ageGate: true },
+      { n: 3, title: 'Zygote', ytId: 'pKWB-MVJ4sQ', runtime: 23, ageGate: true },
       { n: 4, title: 'God: City', ytId: 'w4AGocVq7-w', runtime: 5 },
       { n: 5, title: 'Kapture', ytId: 'h_4Qqnlpi-s', runtime: 7 },
     ],
@@ -1261,20 +1254,31 @@ export const parseWatchKey = (key) => {
 }
 
 let apiPromise = null
-function loadYouTubeApi() {
+export function loadYouTubeApi() {
   if (apiPromise) return apiPromise
-  apiPromise = new Promise((resolve) => {
+  apiPromise = new Promise((resolve, reject) => {
     if (window.YT && window.YT.Player) return resolve(window.YT)
-    const prev = window.onYouTubeIframeAPIReady
+    const timer = setTimeout(() => {
+      apiPromise = null
+      reject(new Error('YouTube API timed out'))
+    }, 8000)
     window.onYouTubeIframeAPIReady = () => {
-      if (prev) prev()
-      resolve(window.YT)
+      clearTimeout(timer)
+      if (window.YT && window.YT.Player) resolve(window.YT)
+      else {
+        apiPromise = null
+        reject(new Error('YouTube API incomplete'))
+      }
     }
     const tag = document.createElement('script')
     tag.src = 'https://www.youtube.com/iframe_api'
+    tag.onerror = () => {
+      clearTimeout(timer)
+      apiPromise = null
+      reject(new Error('YouTube API blocked'))
+    }
     document.head.appendChild(tag)
   })
   return apiPromise
 }
 
-export { loadYouTubeApi }

@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext.jsx'
-import { CATALOG, formatRuntime, matchScore, thumbForVideo } from '../data/catalog.js'
+import { CATALOG, formatRuntime, matchScore } from '../data/catalog.js'
 import Icon from './Icon.jsx'
 import Thumb from './Thumb.jsx'
 
@@ -66,7 +66,13 @@ export default function TicketModal() {
               <span>{item.year}</span>
               <span className="chip-mat">{item.maturity}</span>
               <span>{item.type === 'series' ? `${item.episodes.length} episodes` : formatRuntime(item.runtime)}</span>
-              <span className="chip-src">FREE OFFICIAL STREAM</span>
+              {item.ageGate ? (
+                <span className="chip-src" style={{ borderColor: 'rgba(255,209,102,.6)', color: 'var(--gold)' }}>
+                  OPENS ON YOUTUBE (AGE CHECK)
+                </span>
+              ) : (
+                <span className="chip-src">FREE OFFICIAL STREAM</span>
+              )}
             </div>
             <p className="ticket-desc">{item.desc}</p>
           </div>
@@ -86,13 +92,7 @@ export default function TicketModal() {
               {item.episodes.map((ep) => (
                 <div key={ep.n} className="episode" onClick={() => play(ep.n)}>
                   <span className="ep-num">{ep.n}</span>
-                  <img
-                    className="ep-thumb"
-                    src={thumbForVideo(ep.ytId).primary}
-                    alt=""
-                    loading="lazy"
-                    onError={(e) => { e.currentTarget.src = thumbForVideo(ep.ytId).secondary }}
-                  />
+                  <Thumb videoId={ep.ytId} className="ep-thumb" />
                   <div className="ep-info">
                     {ep.title}
                     <span className="ep-dur">{formatRuntime(ep.runtime || item.runtime)}</span>

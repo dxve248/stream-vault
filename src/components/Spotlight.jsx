@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useApp } from '../context/AppContext.jsx'
-import { formatRuntime, matchScore, thumbFor, kidFilter } from '../data/catalog.js'
+import { formatRuntime, matchScore, kidFilter } from '../data/catalog.js'
 import Icon from './Icon.jsx'
+import Thumb from './Thumb.jsx'
 
 const FEATURED = ['kung-fury', 'the-amazing-digital-circus', 'oats-studios-volume-1', 'hazbin-hotel-pilot', 'sprite-fright']
 
@@ -24,14 +25,11 @@ export default function Spotlight({ getItem }) {
 
   return (
     <section className="spotlight">
-      {items.map((it, i) => {
-        const t = thumbFor(it)
-        return (
-          <div key={it.slug} className={`spot-bg ${i === index ? 'active' : ''}`}>
-            <img src={t.primary} alt="" onError={(e) => { e.currentTarget.src = t.secondary }} />
-          </div>
-        )
-      })}
+      {items.map((it, i) => (
+        <div key={it.slug} className={`spot-bg ${i === index ? 'active' : ''}`}>
+          <Thumb item={it} eager />
+        </div>
+      ))}
       <div className="spot-shade" />
       <div className="spot-content" key={item.slug + '-c'}>
         <span className="spot-kicker">
