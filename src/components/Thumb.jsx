@@ -11,29 +11,34 @@ export default function Thumb({ item, videoId, className = '', eager = false }) 
   const ytId = videoId ?? item?.ytId ?? null
   const list = useMemo(() => candidatesFor(ytId), [ytId])
   const [idx, setIdx] = useState(0)
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     setIdx(0)
+    setLoaded(false)
   }, [list])
 
   const advance = () =>
     setIdx((k) => (k < list.length - 1 ? k + 1 : k))
 
+  const cls = `${className}${loaded ? ' loaded' : ''}`
+
   if (!ytId) {
     const archiveId = item?.archiveId
     return (
       <img
-        className={className}
+        className={cls}
         src={archiveId ? `https://archive.org/services/img/${archiveId}` : ''}
         alt=""
         loading={eager ? 'eager' : 'lazy'}
+        onLoad={() => setLoaded(true)}
       />
     )
   }
 
   return (
     <img
-      className={`${className}`}
+      className={cls}
       src={list[idx]}
       alt=""
       loading={eager ? 'eager' : 'lazy'}
@@ -41,6 +46,8 @@ export default function Thumb({ item, videoId, className = '', eager = false }) 
       onLoad={(e) => {
         if ((e.currentTarget.naturalWidth || 0) <= PLACEHOLDER_WIDTH && idx < list.length - 1) {
           advance()
+        } else {
+          setLoaded(true)
         }
       }}
     />

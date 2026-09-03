@@ -84,6 +84,7 @@ export default function Home() {
           if (!item || !p.d) return null
           return {
             item,
+            n,
             label: n ? `${item.title} \u2014 Ep. ${n}` : item.title,
             pct: Math.round((p.t / p.d) * 100),
             updated: p.updated,
@@ -102,7 +103,7 @@ export default function Home() {
 
   return (
     <>
-      <Spotlight getItem={getItem} />
+      <Spotlight />
       <div className="page-pad">
         {continueWatching.length > 0 && (
           <section className="strip-section">
@@ -111,7 +112,7 @@ export default function Home() {
             </div>
             <div className="strip-scroller">
               {continueWatching.map((cw) => (
-                <ContinueCard key={cw.item.slug + cw.label} item={cw.item} pct={cw.pct} label={cw.label} />
+                <ContinueCard key={cw.item.slug + cw.label} item={cw.item} pct={cw.pct} label={cw.label} epNum={cw.n} />
               ))}
             </div>
           </section>

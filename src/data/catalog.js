@@ -1231,9 +1231,6 @@ const KIDS_OK = ['G', 'PG', 'TV-PG']
 export const kidFilter = (items, on) =>
   on ? items.filter((i) => KIDS_OK.includes(i.maturity)) : items
 
-export const getByGenre = (genre) =>
-  genre ? CATALOG.filter((i) => i.genres.includes(genre)) : CATALOG
-
 export const matchScore = (slug) => {
   let h = 0
   for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) >>> 0

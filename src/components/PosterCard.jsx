@@ -58,7 +58,7 @@ export default function PosterCard({ item, index = 0 }) {
   )
 }
 
-export function ContinueCard({ item, pct, label }) {
+export function ContinueCard({ item, pct, label, epNum }) {
   const navigate = useNavigate()
   return (
     <article
@@ -66,8 +66,8 @@ export function ContinueCard({ item, pct, label }) {
       role="button"
       tabIndex={0}
       aria-label={`Resume ${label}`}
-      onClick={() => navigate(`/watch/${item.slug}`)}
-      onKeyDown={(e) => e.key === 'Enter' && navigate(`/watch/${item.slug}`)}
+      onClick={() => navigate(`/watch/${item.slug}${epNum ? `?ep=${epNum}` : ''}`)}
+      onKeyDown={(e) => e.key === 'Enter' && navigate(`/watch/${item.slug}${epNum ? `?ep=${epNum}` : ''}`)}
     >
       <Thumb item={item} className="" />
       <div className="strip-label">{label}</div>

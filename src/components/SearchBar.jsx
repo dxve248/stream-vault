@@ -1,11 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import Icon from './Icon.jsx'
 
 export default function SearchBar() {
-  const [q, setQ] = useState('')
+  const [params] = useSearchParams()
+  const [q, setQ] = useState(() => params.get('q') || '')
   const timer = useRef(null)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    setQ(params.get('q') || '')
+  }, [params])
 
   useEffect(() => () => clearTimeout(timer.current), [])
 

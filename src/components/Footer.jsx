@@ -4,8 +4,8 @@ export default function Footer() {
       <p><strong>MIDNIGHT MARQUEE</strong></p>
       <p>Dave&rsquo;s private cinema &mdash; now showing forever.</p>
       <p>
-        Full films stream via official YouTube embeds and the{' '}
-        <a href="https://archive.org" target="_blank" rel="noreferrer">Internet Archive</a>. Press Esc to leave anything.
+        All titles stream free via official YouTube channels. Press{' '}
+        <kbd>Esc</kbd> to leave anything.
       </p>
     </footer>
   )

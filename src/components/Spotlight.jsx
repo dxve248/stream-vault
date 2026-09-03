@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useApp } from '../context/AppContext.jsx'
-import { formatRuntime, matchScore, kidFilter } from '../data/catalog.js'
+import { formatRuntime, matchScore, kidFilter, getItem } from '../data/catalog.js'
 import Icon from './Icon.jsx'
 import Thumb from './Thumb.jsx'
 
 const FEATURED = ['kung-fury', 'the-amazing-digital-circus', 'oats-studios-volume-1', 'hazbin-hotel-pilot', 'sprite-fright']
 
-export default function Spotlight({ getItem }) {
+export default function Spotlight() {
   const [index, setIndex] = useState(0)
   const { openDetails, kidsMode } = useApp()
   const items = kidFilter(
@@ -16,6 +16,11 @@ export default function Spotlight({ getItem }) {
   )
 
   useEffect(() => {
+    setIndex(0)
+  }, [items.length])
+
+  useEffect(() => {
+    if (items.length < 2) return undefined
     const id = setInterval(() => setIndex((i) => (i + 1) % items.length), 9000)
     return () => clearInterval(id)
   }, [items.length])
